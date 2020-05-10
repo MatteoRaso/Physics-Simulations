@@ -4,40 +4,25 @@
 """
 @author: MatteoRaso
 """
-# A simple n-body simulation. It is assumed that there are no attractive
-# or repulsive forces between the particles.
-# We will use it from the command-line
+# A more realistic n-body simulation.
+# We will use it from the command-line.
 # sys.argv[1] is a csv file containing the parameters of the simulation.
 # The columns are time, box_width, box_height, box_depth
 # Every other input is a csv file representing a particle.
-# The columns are mass, x_position, y_position, z_position,  radius, x_velocity, y_velocity, z_velocity
+# The columns are mass, x_position, y_position, z_position,  radius, x_velocity, y_velocity, z_velocity, charge
 # The outputs are a unique csv file for each file.
 # The columns are x_position, y_position, z_position, x_velocity, y_velocity, z_velocity, energy, momentum, current_time
-#
-#Algorithm
-#
-#1. read in the files
-#2. set the parameters
-#3. using a for-loop, initalize a particle object for every file other than the parameters file
-#4. in a while-loop, run reflection(particle) for every particle
-#4.1. check if each particle is close to any other particle
-#4.1.1. if a particle is close to another particle, run collision(particle1, particle2)
-#4.2. Update particle positions
-#4.2. save the particle properties and current_time to numpy array current_array
-#4.3. particle.array = np.vstack((particle.array, current_array))
-#4.4. add time_step to current_time
-#4.5. go to 4.1. and repeat until current_time >= time
-#5. Use a for-loop and execute particle.write_to_output_file() for each particle
+
 
 import numpy as np
 import sys
 import csv
 import auxillary as ax
-import contextlib
 
 epsilion = 1e-3
 time_step = 0.01  # We will evaluate the simulation every 0.01 seconds.
-
+G = 6.67e-11 #Gravitational constant
+k = 8.99e9 #Electric constant
 
 def main(*args):
     with open(sys.argv[1], 'r') as csvfile:
@@ -70,6 +55,7 @@ def main(*args):
         current_particle.update_distance()
         f = open(file, 'r')
         current_particle.input_file = f.name
+        current_particle.charge = float(row[8])
         f.close()
         current_particle.make_output_file()
         current_particle.init_array()
@@ -86,10 +72,23 @@ def main(*args):
                 for i in range(0, len(updated_particle_list)):
                     second_particle = updated_particle_list[i]
                     # The distance between the particles minus the radius of the particles
-                    if (np.sqrt(sum((particle.position - second_particle.position) ** 2)) - particle.radius - second_particle.radius) < epsilion:
+                    distance = np.sqrt(sum((particle.position - second_particle.position) ** 2)
+                    if (distance) - particle.radius - second_particle.radius) < epsilion:
                         ax.collision(particle, second_particle, current_time)
                         print("[*] Collision at " + str(current_time) + ".")
 
+                    #Updating the forces
+                    #We want each of the forces to be in the same direction as the second particle,
+                    #so we multiply the forces by the unit vector of the distance between the two.
+                    unit_vector = (particle.position - second_particle.position) / distance
+                    particle.net_force += unit_vector * G * particle.mass * second_particle.mass / (distance ** 2)
+                    #We don't want to waste time calculating the electric force if it's 0.
+                    if particle.charge != 0 and second_particle.charge != 0:
+                        particle.net_force += unit_vector * k * particle.charge * second_particle.charge / (distance ** 2)
+
+                particle.update_velocity(time_step)
+                particle.update_energy()
+                particle.update_momentum()
                 current_array = np.array([particle.position[0], particle.position[1], particle.position[2], particle.velocity[0], particle.velocity[1], particle.velocity[2], particle.energy, particle.momentum, current_time])
                 particle.position += particle.velocity * time_step
                 particle.array = np.vstack((particle.array, current_array))

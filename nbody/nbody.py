@@ -33,7 +33,6 @@ import numpy as np
 import sys
 import csv
 import auxillary as ax
-import contextlib
 
 epsilion = 1e-3
 time_step = 0.01  # We will evaluate the simulation every 0.01 seconds.

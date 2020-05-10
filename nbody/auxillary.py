@@ -45,6 +45,16 @@ class particle():
     def update_distance(self):
           self.distance_from_centre = np.sqrt(sum(self.position ** 2))
 
+    def update_velocity(particle, time_step):
+        #We know that the net force on an object is equvilent to mass times acceleration.
+        #Using this, we can trivially derive the acceleration of the object by taking
+        #the force acting upon it and dividing it by the mass. The change in velocity
+        #is the integral of acceleration, but we can approximate this by multiplying the
+        #acceleration by time_step.
+        acceleration = particle.net_force / particle.mass
+        particle.velocity += acceleration * time_step
+        particle.net_force = 0
+
     def make_output_file(self):
         self.output_file = self.input_file.strip('.csv') + '_output' + '.csv'
 
@@ -105,13 +115,3 @@ def reflection(particle):
         if abs(particle.position[i] - max_box[i]) < epsilion or abs(particle.position[i] - min_box[i]) < epsilion:
              #Reverses the velocity component parallel to the side of the box the particle is about to hit.
              particle.velocity[i] *= -1
-
-def update_velocity(particle, time_step):
-    #We know that the net force on an object is equvilent to mass times acceleration.
-    #Using this, we can trivially derive the acceleration of the object by taking
-    #the force acting upon it and dividing it by the mass. The change in velocity
-    #is the integral of acceleration, but we can approximate this by multiplying the
-    #acceleration by time_step.
-    acceleration = particle.net_force / particle.mass
-    particle.velocity += acceleration * time_step
-    particle.net_force = 0
