@@ -33,6 +33,7 @@ class particle():
         self.input_file = ''
         self.output_file = ''
         self.array = []
+        self.charge = 0
 
     def update_momentum(self):
         self.momentum = self.mass * np.sqrt(sum(self.velocity ** 2)) #Pythagorean Theorem
