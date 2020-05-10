@@ -34,6 +34,7 @@ class particle():
         self.output_file = ''
         self.array = []
         self.charge = 0
+        self.net_force = np.array([0,0,])
 
     def update_momentum(self):
         self.momentum = self.mass * np.sqrt(sum(self.velocity ** 2)) #Pythagorean Theorem
@@ -105,3 +106,12 @@ def reflection(particle):
              #Reverses the velocity component parallel to the side of the box the particle is about to hit.
              particle.velocity[i] *= -1
 
+def update_velocity(particle, time_step):
+    #We know that the net force on an object is equvilent to mass times acceleration.
+    #Using this, we can trivially derive the acceleration of the object by taking
+    #the force acting upon it and dividing it by the mass. The change in velocity
+    #is the integral of acceleration, but we can approximate this by multiplying the
+    #acceleration by time_step.
+    acceleration = particle.net_force / particle.mass
+    particle.velocity += acceleration * time_step
+    particle.net_force = 0
