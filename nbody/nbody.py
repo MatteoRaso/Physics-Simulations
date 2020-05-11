@@ -14,20 +14,20 @@
 # The outputs are a unique csv file for each file.
 # The columns are x_position, y_position, z_position, x_velocity, y_velocity, z_velocity, energy, momentum, current_time
 #
-#Algorithm
+# Algorithm
 #
-#1. read in the files
-#2. set the parameters
-#3. using a for-loop, initalize a particle object for every file other than the parameters file
-#4. in a while-loop, run reflection(particle) for every particle
-#4.1. check if each particle is close to any other particle
-#4.1.1. if a particle is close to another particle, run collision(particle1, particle2)
-#4.2. Update particle positions
-#4.2. save the particle properties and current_time to numpy array current_array
+# 1. read in the files
+# 2. set the parameters
+# 3. using a for-loop, initalize a particle object for every file other than the parameters file
+# 4. in a while-loop, run reflection(particle) for every particle
+# 4.1. check if each particle is close to any other particle
+# 4.1.1. if a particle is close to another particle, run collision(particle1, particle2)
+# 4.2. Update particle positions
+# 4.2. save the particle properties and current_time to numpy array current_array
 #4.3. particle.array = np.vstack((particle.array, current_array))
-#4.4. add time_step to current_time
-#4.5. go to 4.1. and repeat until current_time >= time
-#5. Use a for-loop and execute particle.write_to_output_file() for each particle
+# 4.4. add time_step to current_time
+# 4.5. go to 4.1. and repeat until current_time >= time
+# 5. Use a for-loop and execute particle.write_to_output_file() for each particle
 
 import numpy as np
 import sys
@@ -60,9 +60,11 @@ def main(*args):
             reader = csv.reader(csvfile, delimiter=',')
             for row in reader:
                 current_particle.mass = float(row[0])
-                current_particle.position = np.array([float(row[1]), float(row[2]), float(row[3])])
+                current_particle.position = np.array(
+                    [float(row[1]), float(row[2]), float(row[3])])
                 current_particle.radius = float(row[4])
-                current_particle.velocity = np.array([float(row[5]), float(row[6]), float(row[7])])
+                current_particle.velocity = np.array(
+                    [float(row[5]), float(row[6]), float(row[7])])
 
         current_particle.update_energy()
         current_particle.update_momentum()
@@ -79,24 +81,26 @@ def main(*args):
     while time > current_time:
         current_time += time_step
         for particle in particle_list:
-                ax.reflection(particle)
-                # We remove the current particle so we don't accidentally have the particle collide with itself.
-                updated_particle_list.remove(particle)
-                for i in range(0, len(updated_particle_list)):
-                    second_particle = updated_particle_list[i]
-                    # The distance between the particles minus the radius of the particles
-                    if (np.sqrt(sum((particle.position - second_particle.position) ** 2)) - particle.radius - second_particle.radius) < epsilion:
-                        ax.collision(particle, second_particle, current_time)
-                        print("[*] Collision at " + str(current_time) + ".")
+            ax.reflection(particle)
+            # We remove the current particle so we don't accidentally have the particle collide with itself.
+            updated_particle_list.remove(particle)
+            for i in range(0, len(updated_particle_list)):
+                second_particle = updated_particle_list[i]
+                # The distance between the particles minus the radius of the particles
+                if (np.sqrt(sum((particle.position - second_particle.position) ** 2)) - particle.radius - second_particle.radius) < epsilion:
+                    ax.collision(particle, second_particle, current_time)
+                    print("[*] Collision at " + str(current_time) + ".")
 
-                current_array = np.array([particle.position[0], particle.position[1], particle.position[2], particle.velocity[0], particle.velocity[1], particle.velocity[2], particle.energy, particle.momentum, current_time])
-                particle.position += particle.velocity * time_step
-                particle.array = np.vstack((particle.array, current_array))
+            current_array = np.array([particle.position[0], particle.position[1], particle.position[2], particle.velocity[0],
+                                      particle.velocity[1], particle.velocity[2], particle.energy, particle.momentum, current_time])
+            particle.position += particle.velocity * time_step
+            particle.array = np.vstack((particle.array, current_array))
 
-                updated_particle_list = particle_list[:]
+            updated_particle_list = particle_list[:]
 
     for particle in particle_list:
         particle.write_to_output_file()
+
 
 if '-h' in sys.argv or '--help' in sys.argv or len(sys.argv) < 2:
     print("This is an n-body simulation that assumes no attraction or repulsion")
