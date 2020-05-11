@@ -34,7 +34,7 @@ class particle():
         self.output_file = ''
         self.array = []
         self.charge = 0
-        self.net_force = np.array([0,0,])
+        self.net_force = np.array([0.0, 0.0, 0.0])
 
     def update_momentum(self):
         self.momentum = self.mass * np.sqrt(sum(self.velocity ** 2)) #Pythagorean Theorem
@@ -53,7 +53,7 @@ class particle():
         #acceleration by time_step.
         acceleration = particle.net_force / particle.mass
         particle.velocity += acceleration * time_step
-        particle.net_force = 0
+        particle.net_force = np.array([0.0, 0.0, 0.0])
 
     def make_output_file(self):
         self.output_file = self.input_file.strip('.csv') + '_output' + '.csv'
@@ -63,8 +63,9 @@ class particle():
                        'energy', 'momentum', 'time']
         self.array = np.vstack((header, self.array))
         #We need every element of the array to be a string for savetxt to work properly.
-        self.array = self.array.astype(str) 
+        self.array = self.array.astype(str)
         np.savetxt(self.output_file, self.array, delimiter=',', fmt = '%s')
+
     def init_array(self):
         self.array = np.array([self.position[0], self.position[1], self.position[2], self.velocity[0], self.velocity[1], self.velocity[2], self.energy, self.momentum, 0])
 

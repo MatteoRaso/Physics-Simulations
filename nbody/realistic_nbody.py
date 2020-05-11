@@ -71,20 +71,25 @@ def main(*args):
                 updated_particle_list.remove(particle)
                 for i in range(0, len(updated_particle_list)):
                     second_particle = updated_particle_list[i]
-                    # The distance between the particles minus the radius of the particles
-                    distance = np.sqrt(sum((particle.position - second_particle.position) ** 2)
-                    if (distance) - particle.radius - second_particle.radius) < epsilion:
+                    # The distance between the center of the particles
+                    distance = np.sqrt(sum((particle.position - second_particle.position)) ** 2) + particle.radius + second_particle.radius
+
+                    if (np.sqrt(sum((particle.position - second_particle.position)) ** 2) - particle.radius - second_particle.radius) < epsilion:
                         ax.collision(particle, second_particle, current_time)
                         print("[*] Collision at " + str(current_time) + ".")
 
                     #Updating the forces
                     #We want each of the forces to be in the same direction as the second particle,
                     #so we multiply the forces by the unit vector of the distance between the two.
-                    unit_vector = (particle.position - second_particle.position) / distance
+                    unit_vector = (second_particle.position - particle.position + particle.radius + second_particle.radius) / distance
                     particle.net_force += unit_vector * G * particle.mass * second_particle.mass / (distance ** 2)
                     #We don't want to waste time calculating the electric force if it's 0.
                     if particle.charge != 0 and second_particle.charge != 0:
-                        particle.net_force += unit_vector * k * particle.charge * second_particle.charge / (distance ** 2)
+                        #We want to use -= instead of += since the force having a positive value
+                        #(i.e. sign(q_1) == sign(q_2) means that the force is repulsive.
+                        #We could just multiply the value by -1 and keep the +=, but this
+                        #is more efficent and elegant.
+                        particle.net_force -= unit_vector.astype(float) * k * particle.charge * second_particle.charge / (distance ** 2)
 
                 particle.update_velocity(time_step)
                 particle.update_energy()
