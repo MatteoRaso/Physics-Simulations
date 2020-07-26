@@ -77,7 +77,7 @@ def main(*args):
         particle_list.append(current_particle)
 
     current_time = 0
-    updated_particle_list = particle_list[:]
+    updated_particle_list = particle_list.copy()
     while time > current_time:
         current_time += time_step
         for particle in particle_list:
@@ -96,7 +96,7 @@ def main(*args):
             particle.position += particle.velocity * time_step
             particle.array = np.vstack((particle.array, current_array))
 
-            updated_particle_list = particle_list[:]
+            updated_particle_list = particle_list.copy()
 
     for particle in particle_list:
         particle.write_to_output_file()
